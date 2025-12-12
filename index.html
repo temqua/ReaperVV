@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ReaperVV - Веб-микшер для REAPER</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Быстрые стили для сепараторов */
+        .simple-separator {
+            width: 160px;
+            min-width: 160px;
+            height: 100%;
+            background: rgba(122, 162, 255, 0.05);
+            border: 2px dashed rgba(122, 162, 255, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+            margin: 0 5px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .simple-separator:hover {
+            border-color: rgba(122, 162, 255, 0.6);
+            background: rgba(122, 162, 255, 0.08);
+        }
+        
+        .simple-separator.drag-over {
+            border-color: #7bd88f;
+            border-style: solid;
+            background: rgba(123, 216, 143, 0.1);
+        }
+        
+        .separator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .separator-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #7aa2ff;
+            flex: 1;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .separator-edit-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .separator-content {
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(122, 162, 255, 0.5) transparent;
+        }
+        
+        .separator-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .separator-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .separator-content::-webkit-scrollbar-thumb {
+            background: rgba(122, 162, 255, 0.5);
+            border-radius: 2px;
+        }
+        
+        .separator-empty {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 11px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .separator-track {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: move;
+            transition: all 0.2s;
+        }
+        
+        .separator-track:hover {
+            background: rgba(122, 162, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .track-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: rgba(122, 162, 255, 0.2);
+            border: 1px solid rgba(122, 162, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #7aa2ff;
+            flex-shrink: 0;
+        }
+        
+        .track-name {
+            flex: 1;
+            font-size: 11px;
+            color: #eef2f7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .track-remove {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        
+        .track-remove:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .separator-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .separator-control-btn {
+            padding: 4px 8px;
+            background: rgba(122, 162, 255, 0.1);
+            border: 1px solid rgba(122, 162, 255, 0.3);
+            border-radius: 4px;
+            color: #7aa2ff;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .separator-control-btn:hover {
+            background: rgba(122, 162, 255, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .simple-separator {
+                width: 120px;
+                min-width: 120px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .simple-separator {
+                width: 100px;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Основной контейнер -->
+        <div class="mixer-container">
+            <!-- Панель управления -->
+            <div class="control-panel" id="controlPanel">
+                <button class="close-panel-btn" onclick="toggleControlPanel()">×</button>
+                
+                <div class="status-section">
+                    <div class="connection-status">
+                        <div class="status-dot" id="statusDot"></div>
+                        <span id="statusText">Подключение...</span>
+                    </div>
+                    <div class="transport-info">
+                        <div class="bpm-display" id="bpmDisplay">BPM: 120.00</div>
+                        <div class="region-display" id="regionDisplay">--</div>
+                        <div class="transport-display" id="transportDisplay">00:00.000</div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="control-title">🚦 Транспорт</div>
+                    <div class="transport-controls">
+                        <button class="transport-btn rewind" onclick="transportRewind()">
+                            <span class="btn-icon">⏮</span>
+                            <span class="btn-label">Назад</span>
+                        </button>
+                        <button class="transport-btn stop" onclick="transportStop()">
+                            <span class="btn-icon">⏹</span>
+                            <span class="btn-label">Стоп</span>
+                        </button>
+                        <button class="transport-btn play" onclick="transportPlay()">
+                            <span class="btn-icon">▶</span>
+                            <span class="btn-label">Воспр.</span>
+                        </button>
+                        <button class="transport-btn record" onclick="transportRecord()">
+                            <span class="btn-icon">●</span>
+                            <span class="btn-label">Запись</span>
+                        </button>
+                        <button class="transport-btn" onclick="transportPause()">
+                            <span class="btn-icon">⏸</span>
+                            <span class="btn-label">Пауза</span>
+                        </button>
+                        <button class="transport-btn" onclick="transportFastForward()">
+                            <span class="btn-icon">⏭</span>
+                            <span class="btn-label">Вперед</span>
+                        </button>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="quick-btn" onclick="toggleFullscreen()">
+                            <span>📱</span> Полный экран
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="control-title">📁 Сепараторы</div>
+                    <div class="quick-controls">
+                        <button class="quick-btn" onclick="createNewSeparator()">
+                            <span>➕</span> Новый сепаратор
+                        </button>
+                        <button class="quick-btn" onclick="clearAllSeparators()">
+                            <span>🗑️</span> Очистить все
+                        </button>
+                    </div>
+                    <div class="quick-controls" style="margin-top: 8px;">
+                        <button class="quick-btn" onclick="toggleSeparatorSync()">
+                            <span>🔄</span> Синхронизация: <span id="separatorSyncText">ВКЛ</span>
+                        </button>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 11px; color: var(--text-secondary);">
+                        💡 Перетащите треки в сепараторы для группировки
+                    </div>
+                    <div style="margin-top: 5px; font-size: 10px; color: var(--accent);">
+                        Сепараторов: <span id="separatorCount">0</span>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="control-title">⚡ Быстрые действия</div>
+                    <div class="quick-controls">
+                        <button class="quick-btn" onclick="saveProject()">
+                            <span>💾</span> Сохранить
+                        </button>
+                        <button class="quick-btn" onclick="undoAction()">
+                            <span>↩️</span> Отмена
+                        </button>
+                        <button class="quick-btn" onclick="toggleMetronome()">
+                            <span>🎵</span> Метроном
+                        </button>
+                        <button class="quick-btn" onclick="toggleRepeat()">
+                            <span>🔁</span> Повтор
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="control-title">⚙️ Настройки</div>
+                    <div class="quick-controls">
+                        <button class="quick-btn" onclick="refreshAll()">
+                            <span>🔄</span> Обновить
+                        </button>
+                        <button class="quick-btn" onclick="toggleAutoUpdate()">
+                            <span>⏱️</span> Автообновление: <span id="autoUpdateText">ВКЛ</span>
+                        </button>
+                        <button class="quick-btn" onclick="showHelp()">
+                            <span>❓</span> Помощь
+                        </button>
+                        <button class="quick-btn" onclick="openTrackManager()">
+                            <span>👁️</span> Управление треками
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="control-title">🎚️ Мастер-контроль</div>
+                    <div class="quick-controls">
+                        <button class="quick-btn" onclick="toggleMasterChannel()">
+                            <span>📊</span> Мастер-канал: <span id="masterToggleText">ВКЛ</span>
+                        </button>
+                        <button class="quick-btn" onclick="toggleMasterPosition()">
+                            <span>⬅️➡️</span> Мастер: <span id="masterPositionText">Слева</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="info-message">
+                    Используйте кнопку на мастер-канале для скрытия/показа этой панели. 
+                    При скрытии мастер-канала доступ к настройкам будет через плавающую кнопку.
+                </div>
+            </div>
+            
+            <!-- Микшерная секция -->
+            <div class="mixer-section" id="mixerSection">
+                <!-- Каналы будут добавляться сюда динамически -->
+            </div>
+        </div>
+        
+        <!-- Кнопка разворачивания на весь экран -->
+        <button class="fullscreen-btn mobile-only" onclick="toggleFullscreen()" title="Полный экран">
+            📱
+        </button>
+        
+        <!-- Плавающая кнопка настроек -->
+        <button class="floating-settings-btn" id="floatingSettingsBtn" onclick="toggleControlPanel()" title="Настройки">
+            ⚙️
+        </button>
+        
+        <!-- Мобильное меню для канала -->
+        <div class="channel-menu-overlay" id="channelMenuOverlay">
+            <div class="channel-menu" id="channelMenu">
+                <div class="channel-menu-header">
+                    <div class="channel-menu-title" id="channelMenuTitle">Канал 1</div>
+                    <button class="close-menu-btn" onclick="closeChannelMenu()">×</button>
+                </div>
+                <div class="channel-menu-content">
+                    <div class="channel-menu-volume">
+                        <div class="pan-label">Громкость</div>
+                        <input type="range" class="volume-slider" id="channelMenuVolumeSlider" 
+                               min="0" max="100" step="1" value="75">
+                        <div class="pan-value" id="channelMenuVolumeValue">0.0 dB</div>
+                    </div>
+                    
+                    <div class="channel-menu-pan">
+                        <div class="pan-label">Панорама</div>
+                        <input type="range" class="pan-slider" id="channelMenuPanSlider" 
+                               min="-1" max="1" step="0.01" value="0">
+                        <div class="pan-value" id="channelMenuPanValue">Center</div>
+                    </div>
+                    <div class="channel-menu-controls" id="channelMenuControls">
+                        <!-- Кнопки будут добавлены динамически -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно управления треками -->
+        <div class="track-manager-overlay" id="trackManagerOverlay">
+            <div class="track-manager" id="trackManager">
+                <div class="track-manager-header">
+                    <div class="track-manager-title">👁️ Управление треками</div>
+                    <button class="close-track-manager-btn" onclick="closeTrackManager()">×</button>
+                </div>
+                <div class="track-list" id="trackList">
+                    <!-- Список треков будет добавлен динамически -->
+                </div>
+                <div class="track-manager-footer">
+                    <button class="quick-btn" onclick="selectAllTracks()">
+                        <span>✓</span> Выбрать все
+                    </button>
+                    <button class="quick-btn" onclick="deselectAllTracks()">
+                        <span>✗</span> Снять все
+                    </button>
+                    <button class="quick-btn" onclick="applyTrackVisibility()">
+                        <span>💾</span> Применить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
