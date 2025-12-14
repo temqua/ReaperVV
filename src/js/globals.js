@@ -4,6 +4,10 @@ export const separatorSystem = {
   separators: {},
   nextId: 1,
 };
+
+/**
+ * @type {import('./types').Globals}
+ */
 export const globals = {
   masterOnLeft: true,
   isConnected: false,

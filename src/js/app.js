@@ -511,6 +511,10 @@ function loadSettings() {
 }
 
 // === МЕНЮ КАНАЛА ===
+/**
+ *
+ * @param {number} trackIndex
+ */
 function openChannelMenu(trackIndex) {
   globals.currentMenuChannel = trackIndex;
   const channelDiv =

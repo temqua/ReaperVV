@@ -42,6 +42,10 @@ export function checkConnection() {
   sendCommand("PING");
 }
 
+/**
+ *
+ * @param {number} trackIndex
+ */
 export function updateChannelMenuButtons(trackIndex) {
   if (globals.currentMenuChannel !== trackIndex) return;
 

@@ -9,6 +9,13 @@ import {
   volumeToDb,
 } from "./utils.js";
 
+/**
+ * @type {Record<string | number, {
+ *    current: number;
+ *    target: number;
+ *    lastUpdate: number;
+ * }>}
+ */
 let vuSmoothing = {};
 let panSliders = {};
 
@@ -63,6 +70,11 @@ export function createMasterChannel() {
   initFader("masterFader", 1.0, "master");
 }
 
+/**
+ *
+ * @param {number} trackIndex
+ * @param {import('./types.d.ts').TrackData} trackData
+ */
 export function createChannel(trackIndex, trackData) {
   const mixerSection = document.getElementById("mixerSection");
   if (!mixerSection) return;
@@ -187,6 +199,11 @@ export function createChannel(trackIndex, trackData) {
   };
 }
 
+/**
+ *
+ * @param {number} trackIndex
+ * @param {import('./types.d.ts').TrackData} trackData
+ */
 export function updateChannel(trackIndex, trackData) {
   const channelDiv = globals.channels[trackIndex];
   if (!channelDiv) return;
@@ -283,6 +300,10 @@ export function updateChannel(trackIndex, trackData) {
   }
 }
 
+/**
+ *
+ * @param {import('./types.d.ts').TrackData} trackData
+ */
 export function updateMasterChannel(trackData) {
   if (!globals.masterChannel) return;
 
