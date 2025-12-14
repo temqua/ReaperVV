@@ -201,11 +201,17 @@ function toggleMasterMute() {
   }
 }
 
+/**
+ *
+ * @param {number} trackIndex
+ * @param {number} value
+ */
 function setPan(trackIndex, value) {
   sendCommand(`SET/TRACK/${trackIndex}/PAN/${value}`);
 }
 
 function resetPan(trackIndex) {
+  /** @type {HTMLInputElement} */
   const panSlider = document.getElementById(`panSlider-${trackIndex}`);
   if (panSlider) {
     panSlider.value = 0;
@@ -311,6 +317,11 @@ function startPolling() {
   }, 150);
 }
 
+/**
+ *
+ * @param {string} message
+ * @param {string} color
+ */
 function updateStatus(message, color) {
   const text = document.getElementById("statusText");
   if (text) {
@@ -329,6 +340,11 @@ function updateStatus(message, color) {
   }
 }
 
+/**
+ *
+ * @param {string} message
+ * @param {string} type
+ */
 function showMessage(message, type) {
   updateStatus(message, type === "info" ? "#2196F3" : "#F44336");
 }
@@ -410,6 +426,7 @@ function toggleMasterPosition() {
 }
 
 function moveMasterChannel() {
+  /** @type {HTMLDivElement} */
   const mixerSection = document.getElementById("mixerSection");
   if (!globals.masterChannel || !mixerSection) return;
 
@@ -423,6 +440,7 @@ function moveMasterChannel() {
 }
 
 function setupSwipeToClose() {
+  /** @type {HTMLDivElement} */
   const panel = document.getElementById("controlPanel");
   let startX = 0;
   let startY = 0;
@@ -528,6 +546,7 @@ function openChannelMenu(trackIndex) {
   document.getElementById("channelMenuTitle").textContent =
     `${menuTitle}: ${trackName}`;
 
+  /** @type {HTMLDivElement} */
   const menuControls = document.getElementById("channelMenuControls");
   menuControls.innerHTML = "";
 
@@ -591,9 +610,13 @@ function closeChannelMenu() {
 }
 
 function setupMenuSliders() {
+  /** @type {HTMLInputElement} */
   const menuVolumeSlider = document.getElementById("channelMenuVolumeSlider");
+  /** @type {HTMLInputElement} */
   const menuVolumeValue = document.getElementById("channelMenuVolumeValue");
+  /** @type {HTMLInputElement} */
   const menuPanSlider = document.getElementById("channelMenuPanSlider");
+  /** @type {HTMLInputElement} */
   const menuPanValue = document.getElementById("channelMenuPanValue");
 
   if (menuVolumeSlider && menuVolumeValue) {
@@ -806,9 +829,7 @@ function openTrackManager() {
       const trackItem = document.createElement("div");
       trackItem.className = "track-item";
       trackItem.innerHTML = `
-                <input type="checkbox" class="track-checkbox" ${
-                  isVisible ? "checked" : ""
-                } 
+                <input type="checkbox" class="track-checkbox" ${isVisible ? "checked" : ""} 
                        data-track-index="${trackIndex}" onchange="toggleTrackVisibility(${trackIndex}, this.checked)">
                 <div class="track-number">${trackIndex}</div>
                 <input type="text" class="track-name-input" value="${trackName}" 
@@ -845,6 +866,7 @@ function updateTrackName(trackIndex, newName) {
 }
 
 function selectAllTracks() {
+  /** @type {NodeListOf<HTMLInputElement>} */
   const checkboxes = document.querySelectorAll(".track-checkbox");
   checkboxes.forEach((checkbox) => {
     checkbox.checked = true;
@@ -859,6 +881,7 @@ function selectAllTracks() {
 }
 
 function deselectAllTracks() {
+  /** @type {NodeListOf<HTMLInputElement>} */
   const checkboxes = document.querySelectorAll(".track-checkbox");
   checkboxes.forEach((checkbox) => {
     checkbox.checked = false;
@@ -908,6 +931,12 @@ document.addEventListener("DOMContentLoaded", function () {
   setupSwipeToClose();
 });
 // === СИСТЕМА СЕПАРАТОРОВ - ИСПРАВЛЕННЫЙ КОД ===
+/**
+ *
+ * @param {DragEvent} e
+ * @param {string} separatorId
+ * @returns
+ */
 function handleSeparatorDrop(e, separatorId) {
   e.preventDefault();
   this.classList.remove("drag-over");
@@ -958,6 +987,11 @@ function moveSeparator(sourceId, targetId) {
   console.log(`✅ Сепаратор ${sourceId} перемещен после ${targetId}`);
 }
 
+/**
+ *
+ * @param {string} separatorId
+ * @returns {HTMLDivElement}
+ */
 function createSeparatorElement(separatorId) {
   const separator = separatorSystem.separators[separatorId];
   if (!separator) {
@@ -985,19 +1019,13 @@ function createSeparatorElement(separatorId) {
             </div>
             <button class="separator-edit-btn" onclick="editSeparator('${separatorId}'); event.stopPropagation();">✎</button>
         </div>
-        <div class="separator-content" style="${
-          separator.collapsed ? "display: none;" : ""
-        }">
-            <div class="separator-empty" ${
-              tracksCount > 0 ? 'style="display: none;"' : ""
-            }>
+        <div class="separator-content" style="${separator.collapsed ? "display: none;" : ""}">
+            <div class="separator-empty" ${tracksCount > 0 ? 'style="display: none;"' : ""}>
                 <div style="font-size: 24px; margin-bottom: 8px; opacity: 0.5;">📁</div>
                 <div>Перетащите треки сюда</div>
             </div>
         </div>
-        <div class="separator-controls" ${
-          tracksCount === 0 ? 'style="display: none;"' : ""
-        }>
+        <div class="separator-controls" ${tracksCount === 0 ? 'style="display: none;"' : ""}>
             <button class="separator-control-btn" onclick="expandAllInSeparator('${separatorId}'); event.stopPropagation();">Показать</button>
             <button class="separator-control-btn" onclick="collapseAllInSeparator('${separatorId}'); event.stopPropagation();">Скрыть</button>
         </div>

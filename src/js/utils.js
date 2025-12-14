@@ -1,6 +1,13 @@
 import { sendCommand } from "./client.js";
 import { globals } from "./globals.js";
+
+/**
+ *
+ * @param {number} trackIndex
+ * @param {number} value
+ */
 export function updatePanDisplay(trackIndex, value) {
+  /** @type {HTMLInputElement} */
   const panValue = document.getElementById(`panValue-${trackIndex}`);
   if (panValue) {
     panValue.textContent = panToPercent(parseFloat(value));
@@ -15,6 +22,11 @@ export function sendVolumeCommand(trackId, volume) {
   sendCommand(command);
 }
 
+/**
+ *
+ * @param {number} position
+ * @returns {number}
+ */
 export function positionToVolume(position) {
   if (position <= 0) return 0;
   const dB = position * (60 / 75) - 60;
@@ -22,18 +34,34 @@ export function positionToVolume(position) {
   return Math.exp(dB / 8.68588963806);
 }
 
+/**
+ *
+ * @param {number} volume
+ * @returns {string}
+ */
+
 export function volumeToDb(volume) {
   if (volume <= 0.00000001) return "-∞ dB";
   const dB = Math.log(volume) * 8.68588963806;
   return dB.toFixed(1) + " dB";
 }
 
+/**
+ *
+ * @param {number} pan
+ * @returns {string}
+ */
 export function panToPercent(pan) {
   if (Math.abs(pan) < 0.01) return "Center";
   if (pan > 0) return "R" + (pan * 100).toFixed(0) + "%";
   return "L" + (pan * -100).toFixed(0) + "%";
 }
 
+/**
+ *
+ * @param {number} trackIndex
+ * @param {number} value
+ */
 export function sendPanCommand(trackIndex, value) {
   sendCommand(`SET/TRACK/${trackIndex}/PAN/${value}`);
 }
